@@ -1,7 +1,7 @@
 {
   "name": "twisted-storm-analyst",
-  "version": "1.0.0",
-  "description": "TWISTED Storm Analyst AI — Powered by Groq",
+  "version": "1.1.0",
+  "description": "TWISTED Storm Analyst AI — Powered by Groq Vision & Llama",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
