@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TWISTED Storm Analyst — AI Forecast</title>
+    <title>TWISTED Storm Analyst — Radar &amp; Tornado Forecast</title>
     <style>
       :root {
         --bg: #0f172a;
@@ -47,13 +47,13 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: 10px;
       }
 
       .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
       }
 
       .logo-wrap {
@@ -74,7 +74,7 @@
       }
 
       .brand-tagline {
-        font-size: 0.75rem;
+        font-size: 0.74rem;
         color: var(--muted);
       }
 
@@ -89,8 +89,8 @@
         color: var(--muted);
         border: 1px solid transparent;
         border-radius: 10px;
-        padding: 8px 12px;
-        font-size: 0.84rem;
+        padding: 8px 11px;
+        font-size: 0.82rem;
         font-weight: 600;
         cursor: pointer;
       }
@@ -106,7 +106,7 @@
         width: 100%;
         max-width: 960px;
         margin: 0 auto;
-        padding: 16px;
+        padding: 14px 16px;
         display: flex;
         flex-direction: column;
       }
@@ -126,7 +126,7 @@
         justify-content: space-between;
         align-items: center;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       .btn {
@@ -134,10 +134,11 @@
         background: var(--card);
         color: var(--text);
         border-radius: 10px;
-        padding: 8px 13px;
+        padding: 8px 12px;
         font-size: 0.82rem;
         font-weight: 600;
         cursor: pointer;
+        white-space: nowrap;
       }
 
       .btn:hover {
@@ -152,13 +153,13 @@
 
       .messages {
         flex: 1;
-        min-height: 50vh;
-        max-height: 62vh;
+        min-height: 46vh;
+        max-height: 58vh;
         overflow-y: auto;
         background: rgba(30, 41, 59, 0.45);
         border: 1px solid var(--border);
         border-radius: 16px;
-        padding: 16px;
+        padding: 14px;
         display: flex;
         flex-direction: column;
         gap: 14px;
@@ -173,29 +174,33 @@
 
       .empty-state h2 {
         margin-top: 10px;
-        font-size: 1.25rem;
+        font-size: 1.2rem;
       }
 
       .empty-state p {
         margin-top: 8px;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         line-height: 1.5;
       }
 
       .msg-row {
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
+        flex-direction: column;
+        gap: 6px;
       }
 
       .msg-row.user {
-        justify-content: flex-end;
+        align-items: flex-end;
+      }
+
+      .msg-row.assistant {
+        align-items: flex-start;
       }
 
       .bubble {
-        max-width: 88%;
-        padding: 12px 15px;
+        max-width: 92%;
+        padding: 12px 14px;
         border-radius: 16px;
         font-size: 0.9rem;
         line-height: 1.55;
@@ -215,17 +220,67 @@
         color: var(--text);
         border-bottom-left-radius: 4px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.82rem;
+        font-size: 0.81rem;
+      }
+
+      .img-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
       }
 
       .chat-img {
-        display: block;
-        max-width: 260px;
-        max-height: 200px;
+        max-width: 180px;
+        max-height: 140px;
         border-radius: 10px;
-        margin-bottom: 8px;
         object-fit: cover;
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .diagram-card {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .diagram-img {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 12px;
+        border: 1px solid rgba(124, 58, 237, 0.45);
+      }
+
+      .msg-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      /* Quick county/view tags */
+      .quick-tags {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 8px 0 4px;
+      }
+
+      .tag-chip {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 0.76rem;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .tag-chip:hover {
+        color: #fff;
+        border-color: var(--accent);
       }
 
       .preview-bar {
@@ -233,21 +288,27 @@
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        margin-top: 10px;
-        padding: 8px 12px;
+        margin-top: 8px;
+        padding: 8px 10px;
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 12px;
+        flex-wrap: wrap;
       }
 
       .preview-bar.visible {
         display: flex;
       }
 
-      .preview-left {
+      .preview-thumbs {
         display: flex;
+        gap: 8px;
         align-items: center;
-        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .preview-thumb-wrap {
+        position: relative;
       }
 
       .preview-thumb {
@@ -255,17 +316,19 @@
         height: 48px;
         border-radius: 8px;
         object-fit: cover;
+        border: 1px solid var(--border);
       }
 
       .composer {
-        margin-top: 10px;
+        margin-top: 8px;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: 8px;
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 14px;
-        padding: 8px;
+        padding: 10px;
       }
 
       .composer:focus-within {
@@ -273,18 +336,21 @@
       }
 
       .composer input[type="text"] {
-        flex: 1;
+        flex: 1 1 200px;
         min-width: 0;
-        background: transparent;
-        border: none;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 10px;
         outline: none;
         color: #fff;
-        font-size: 0.94rem;
-        padding: 8px 6px;
+        font-size: 0.92rem;
+        padding: 10px 12px;
       }
 
-      .composer input::placeholder {
-        color: var(--muted);
+      .composer-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
       }
 
       .typing {
@@ -309,22 +375,60 @@
         40% { transform: translateY(-5px); opacity: 1; }
       }
 
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+      }
+
       .card {
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 16px;
-        margin-top: 12px;
       }
 
       .card h3 {
         font-size: 1rem;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
       }
 
-      .card p {
-        font-size: 0.88rem;
+      .card p, .card li {
+        font-size: 0.86rem;
         color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .card ul {
+        padding-left: 18px;
+        margin-top: 6px;
+      }
+
+      .calc-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .calc-input {
+        flex: 1 1 110px;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: #fff;
+        padding: 8px 10px;
+        font-size: 0.88rem;
+      }
+
+      .calc-result {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.65);
+        border: 1px solid rgba(124, 58, 237, 0.4);
+        font-size: 0.85rem;
         line-height: 1.5;
       }
 
@@ -344,22 +448,23 @@
           <div class="logo-wrap" aria-hidden="true">🌪️</div>
           <div>
             <div class="brand-title">TWISTED Storm Analyst</div>
-            <div class="brand-tagline">Radar, Tornado &amp; Map Forecast</div>
+            <div class="brand-tagline">Radar, Tornado &amp; Probe Strategy</div>
           </div>
         </div>
         <nav class="tabs">
           <button class="tab-btn active" data-tab="chat">💬 Analyst</button>
+          <button class="tab-btn" data-tab="tools">⚡ Tools &amp; Guide</button>
           <button class="tab-btn" data-tab="history">📜 Reports</button>
-          <button class="tab-btn" data-tab="about">ℹ️ Guide</button>
         </nav>
       </div>
     </header>
 
     <main>
+      <!-- Analyst Chat Tab -->
       <section id="tab-chat" class="panel active">
         <div class="toolbar">
-          <span style="font-size: 0.82rem; color: var(--muted);" id="status-text">
-            Upload or paste a TWISTED screenshot
+          <span style="font-size: 0.8rem; color: var(--muted);" id="status-text">
+            Attach up to 3 TWISTED screenshots
           </span>
           <div style="display: flex; gap: 8px;">
             <button class="btn" id="new-chat-btn">New Report</button>
@@ -372,49 +477,97 @@
             <div style="font-size: 2.2rem;">🌪️</div>
             <h2>Ready for Storm Analysis</h2>
             <p>
-              Tap <strong>📷 Screenshot</strong> (or paste an image directly) to send your TWISTED radar, map, or storm view for a full tornado forecast and probe strategy.
+              Tap <strong>📷 Screenshots</strong> (up to 3: Radar + Map + Storm View) to generate a complete Storm Analysis Report plus a visual <strong>Storm Track &amp; Safe-Zone Graphic</strong>.
             </p>
           </div>
         </div>
 
+        <div class="quick-tags" aria-label="Quick context tags">
+          <button type="button" class="tag-chip" data-tag="Radar view in Beltrami County">Beltrami Radar</button>
+          <button type="button" class="tag-chip" data-tag="Radar view in Wadena County">Wadena Radar</button>
+          <button type="button" class="tag-chip" data-tag="Radar view in Cherokee County">Cherokee Radar</button>
+          <button type="button" class="tag-chip" data-tag="Where should I deploy my probes safely?">Probe Placement</button>
+          <button type="button" class="tag-chip" data-tag="Is this tornado rain-wrapped?">Rain-Wrap Check</button>
+        </div>
+
         <div class="preview-bar" id="preview-bar">
-          <div class="preview-left">
-            <img id="preview-img" class="preview-thumb" alt="Selected screenshot preview" />
-            <span style="font-size: 0.84rem; color: var(--muted);">Screenshot attached</span>
-          </div>
-          <button type="button" class="btn" id="remove-img-btn">Remove</button>
+          <div class="preview-thumbs" id="preview-thumbs"></div>
+          <button type="button" class="btn" id="remove-img-btn">Clear Images</button>
         </div>
 
         <form class="composer" id="chat-form">
-          <input type="file" id="image-input" accept="image/*" hidden />
-          <button type="button" class="btn" id="upload-btn">📷 Screenshot</button>
+          <input type="file" id="image-input" accept="image/*" multiple hidden />
           <input
             type="text"
             id="chat-input"
-            placeholder="Optional note (e.g. near Beltrami) or press Analyze..."
+            placeholder="Optional note or county name..."
             autocomplete="off"
           />
-          <button type="submit" class="btn btn-primary" id="send-btn">Analyze</button>
+          <div class="composer-actions">
+            <button type="button" class="btn" id="upload-btn">📷 Screenshots</button>
+            <button type="submit" class="btn btn-primary" id="send-btn">Analyze</button>
+          </div>
         </form>
       </section>
 
+      <!-- Tools & Radar Guide Tab -->
+      <section id="tab-tools" class="panel">
+        <div class="grid">
+          <div class="card">
+            <h3>🎯 Probe Intercept Calculator</h3>
+            <p>Estimate time to impact and ideal probe deployment window.</p>
+            <div class="calc-row">
+              <input type="number" id="calc-speed" class="calc-input" placeholder="Speed (mph)" value="30" min="1" />
+              <input type="number" id="calc-dist" class="calc-input" placeholder="Distance (mi)" value="5" min="0.1" step="0.5" />
+              <select id="calc-dir" class="calc-input">
+                <option value="NE">Moving NE</option>
+                <option value="E">Moving E</option>
+                <option value="SE">Moving SE</option>
+                <option value="N">Moving N</option>
+                <option value="NW">Moving NW</option>
+                <option value="W">Moving W</option>
+                <option value="SW">Moving SW</option>
+                <option value="S">Moving S</option>
+              </select>
+            </div>
+            <div class="calc-result" id="calc-output"></div>
+          </div>
+
+          <div class="card">
+            <h3>📡 TWISTED Radar Signatures</h3>
+            <ul>
+              <li><strong>Hook Echo:</strong> Classic comma-shaped inflow notch — strong tornado potential.</li>
+              <li><strong>BWER:</strong> Donut-like weak center surrounded by purple/red — intense updraft.</li>
+              <li><strong>V-Notch:</strong> V-shaped hail/wind split downwind of a violent supercell.</li>
+              <li><strong>Purple / White Core:</strong> Extreme hail &amp; destructive downdraft winds.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>🌪️ EF Scale Quick Reference</h3>
+            <ul>
+              <li><strong>EF0–EF1 (65–110 mph):</strong> Light to moderate damage; safe for close probe drops.</li>
+              <li><strong>EF2–EF3 (111–165 mph):</strong> Significant damage; stay ahead &amp; perpendicular.</li>
+              <li><strong>EF4–EF5 (166–200+ mph):</strong> Violent wedge; deploy probes early and escape to Safe Zone!</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>🖼️ Can Groq Send Images Back?</h3>
+            <p>
+              Groq only outputs text (it reads your images, but cannot generate PNGs). To give you a visual forecast anyway, this site automatically turns Groq’s report into a downloadable <strong>Storm Track &amp; Safe-Zone PNG</strong> right below every analysis!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Saved Reports Tab -->
       <section id="tab-history" class="panel">
         <div class="toolbar">
           <h2 style="font-size: 1.2rem;">Saved Reports</h2>
           <button class="btn" id="clear-history-btn">Clear All</button>
         </div>
-        <div id="history-list"></div>
-      </section>
-
-      <section id="tab-about" class="panel">
-        <div class="card">
-          <h3>How to Use TWISTED Storm Analyst</h3>
-          <p>
-            1. Take a clear screenshot of your TWISTED radar, map, or storm view.<br />
-            2. Tap <strong>📷 Screenshot</strong> (or paste from clipboard) and hit <strong>Analyze</strong>.<br />
-            3. Use the Safe Zone and Chasing Strategy sections to place probes and stay clear of rain-wrapped tornadoes.
-          </p>
-        </div>
+        <div class="grid" id="history-list" style="grid-template-columns: 1fr;"></div>
       </section>
     </main>
 
@@ -428,18 +581,18 @@
           ? "http://localhost:3000/api/chat"
           : "/api/chat";
 
-      var STORAGE_KEY = "twisted_reports_v1";
+      var STORAGE_KEY = "twisted_reports_v2";
       var sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
       var currentSessionId = null;
       var conversation = [];
-      var pendingImageDataUrl = null;
+      var pendingImages = [];
 
       var messagesEl = document.getElementById("messages");
       var emptyStateEl = document.getElementById("empty-state");
       var statusTextEl = document.getElementById("status-text");
       var imageInput = document.getElementById("image-input");
       var previewBar = document.getElementById("preview-bar");
-      var previewImg = document.getElementById("preview-img");
+      var previewThumbs = document.getElementById("preview-thumbs");
       var chatInput = document.getElementById("chat-input");
       var chatForm = document.getElementById("chat-form");
       var historyListEl = document.getElementById("history-list");
@@ -447,28 +600,40 @@
       function saveSessions() {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, 15)));
-        } catch (err) {
-          // Ignore storage quota errors
-        }
+        } catch (err) {}
       }
 
-      function setPendingImage(dataUrl) {
-        pendingImageDataUrl = dataUrl;
-        if (dataUrl) {
-          previewImg.src = dataUrl;
-          previewBar.classList.add("visible");
-        } else {
-          previewImg.removeAttribute("src");
+      function renderPendingImages() {
+        previewThumbs.innerHTML = "";
+        if (pendingImages.length === 0) {
           previewBar.classList.remove("visible");
           imageInput.value = "";
+          return;
         }
+        previewBar.classList.add("visible");
+        pendingImages.forEach(function (src) {
+          var img = document.createElement("img");
+          img.src = src;
+          img.className = "preview-thumb";
+          img.alt = "Attached screenshot";
+          previewThumbs.appendChild(img);
+        });
+        var label = document.createElement("span");
+        label.style.fontSize = "0.8rem";
+        label.style.color = "var(--muted)";
+        label.textContent = pendingImages.length + "/3 attached";
+        previewThumbs.appendChild(label);
       }
 
-      function readImageFile(file) {
+      function addImageFile(file) {
         if (!file || file.type.indexOf("image/") !== 0) return;
+        if (pendingImages.length >= 3) return;
         var reader = new FileReader();
         reader.onload = function () {
-          setPendingImage(reader.result);
+          if (pendingImages.length < 3) {
+            pendingImages.push(reader.result);
+            renderPendingImages();
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -478,30 +643,162 @@
       });
 
       imageInput.addEventListener("change", function (e) {
-        if (e.target.files && e.target.files[0]) {
-          readImageFile(e.target.files[0]);
+        var files = e.target.files || [];
+        for (var i = 0; i < files.length && i < 3; i++) {
+          addImageFile(files[i]);
         }
       });
 
       document.getElementById("remove-img-btn").addEventListener("click", function () {
-        setPendingImage(null);
+        pendingImages = [];
+        renderPendingImages();
       });
 
       document.addEventListener("paste", function (e) {
         var items = (e.clipboardData && e.clipboardData.items) || [];
         for (var i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image/") === 0) {
-            readImageFile(items[i].getAsFile());
-            break;
+            addImageFile(items[i].getAsFile());
           }
         }
       });
+
+      document.querySelectorAll(".tag-chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          var text = chip.getAttribute("data-tag");
+          chatInput.value = chatInput.value
+            ? chatInput.value + " — " + text
+            : text;
+          chatInput.focus();
+        });
+      });
+
+      // Extract movement direction & intensity to draw a visual Storm Track PNG
+      function parseForecastMeta(replyText) {
+        var dirMatch = replyText.match(/Movement Direction:\s*([^\n•]+)/i);
+        var peakMatch = replyText.match(/Peak Intensity:\s*([^\n•]+)/i);
+        var safeMatch = replyText.match(/SAFE ZONE:\s*([^\n•]+)/i);
+
+        var rawDir = dirMatch ? dirMatch[1].toUpperCase() : "NE";
+        var compass = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+        var foundDir = "NE";
+        for (var i = 0; i < compass.length; i++) {
+          var regex = new RegExp("\\b" + compass[i] + "\\b");
+          if (regex.test(rawDir)) {
+            foundDir = compass[i];
+            break;
+          }
+        }
+        return {
+          direction: foundDir,
+          peak: peakMatch ? peakMatch[1].trim().slice(0, 26) : "Check Report",
+          safe: safeMatch ? safeMatch[1].trim().slice(0, 34) : "Perpendicular to track"
+        };
+      }
+
+      function createStormTrackGraphic(replyText) {
+        if (replyText.indexOf("STORM OVERVIEW") === -1) return null;
+        var meta = parseForecastMeta(replyText);
+        var canvas = document.createElement("canvas");
+        canvas.width = 560;
+        canvas.height = 280;
+        var ctx = canvas.getContext("2d");
+
+        // Dark radar background
+        ctx.fillStyle = "#0b1220";
+        ctx.fillRect(0, 0, 560, 280);
+
+        // Radar rings around storm center
+        var cx = 145;
+        var cy = 145;
+        [35, 68, 102].forEach(function (r) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(148, 163, 184, 0.22)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        });
+
+        // Direction angle map (0 = East, -PI/2 = North)
+        var angles = {
+          E: 0,
+          SE: Math.PI / 4,
+          S: Math.PI / 2,
+          SW: (3 * Math.PI) / 4,
+          W: Math.PI,
+          NW: -(3 * Math.PI) / 4,
+          N: -Math.PI / 2,
+          NE: -Math.PI / 4
+        };
+        var ang = angles[meta.direction] !== undefined ? angles[meta.direction] : -Math.PI / 4;
+
+        // Projected danger cone
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, 108, ang - 0.28, ang + 0.28);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.fill();
+
+        // Storm track arrow
+        var ex = cx + Math.cos(ang) * 95;
+        var ey = cy + Math.sin(ang) * 95;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = "#f87171";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Probe drop marker (slightly ahead of path)
+        var px = cx + Math.cos(ang) * 65;
+        var py = cy + Math.sin(ang) * 65;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fill();
+
+        // Safe zone perpendicular marker
+        var safeAng = ang + Math.PI / 2;
+        var sx = cx + Math.cos(safeAng) * 72;
+        var sy = cy + Math.sin(safeAng) * 72;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+        ctx.fillStyle = "#22c55e";
+        ctx.fill();
+
+        // Storm core dot
+        ctx.beginPath();
+        ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "#a855f7";
+        ctx.fill();
+
+        // Right-hand info legend
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText("TWISTED TRACK VISUALIZER", 285, 48);
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "13px sans-serif";
+        ctx.fillText("Movement: " + meta.direction, 285, 86);
+        ctx.fillText("Peak Est: " + meta.peak, 285, 112);
+        ctx.fillText("Safe Zone: " + meta.safe, 285, 138);
+
+        ctx.fillStyle = "#f87171";
+        ctx.fillText("● Danger Path Cone", 285, 184);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText("● Probe Intercept Target", 285, 208);
+        ctx.fillStyle = "#22c55e";
+        ctx.fillText("● Safe Escape Side", 285, 232);
+
+        return canvas.toDataURL("image/png");
+      }
 
       function renderMessages() {
         messagesEl.innerHTML = "";
         if (conversation.length === 0) {
           messagesEl.appendChild(emptyStateEl);
-          statusTextEl.textContent = "Upload or paste a TWISTED screenshot";
+          statusTextEl.textContent = "Attach up to 3 TWISTED screenshots";
           return;
         }
 
@@ -513,17 +810,63 @@
           var bubble = document.createElement("div");
           bubble.className = "bubble";
 
-          if (msg.image) {
-            var img = document.createElement("img");
-            img.src = msg.image;
-            img.className = "chat-img";
-            img.alt = "Uploaded TWISTED screenshot";
-            bubble.appendChild(img);
+          if (msg.images && msg.images.length > 0) {
+            var grid = document.createElement("div");
+            grid.className = "img-grid";
+            msg.images.forEach(function (src) {
+              var img = document.createElement("img");
+              img.src = src;
+              img.className = "chat-img";
+              img.alt = "Uploaded screenshot";
+              grid.appendChild(img);
+            });
+            bubble.appendChild(grid);
           }
 
           var textSpan = document.createElement("span");
           textSpan.textContent = msg.content;
           bubble.appendChild(textSpan);
+
+          if (msg.role === "assistant") {
+            if (msg.diagramUrl) {
+              var dWrap = document.createElement("div");
+              dWrap.className = "diagram-card";
+              var dImg = document.createElement("img");
+              dImg.src = msg.diagramUrl;
+              dImg.className = "diagram-img";
+              dImg.alt = "Generated storm track graphic";
+              dWrap.appendChild(dImg);
+              bubble.appendChild(dWrap);
+            }
+
+            var actions = document.createElement("div");
+            actions.className = "msg-actions";
+
+            var copyBtn = document.createElement("button");
+            copyBtn.type = "button";
+            copyBtn.className = "btn";
+            copyBtn.textContent = "Copy Report";
+            copyBtn.addEventListener("click", function () {
+              navigator.clipboard.writeText(msg.content);
+              copyBtn.textContent = "Copied!";
+              setTimeout(function () {
+                copyBtn.textContent = "Copy Report";
+              }, 1500);
+            });
+            actions.appendChild(copyBtn);
+
+            if (msg.diagramUrl) {
+              var dlLink = document.createElement("a");
+              dlLink.href = msg.diagramUrl;
+              dlLink.download = "twisted-storm-track.png";
+              dlLink.className = "btn";
+              dlLink.style.textDecoration = "none";
+              dlLink.textContent = "Save Forecast Image";
+              actions.appendChild(dlLink);
+            }
+
+            bubble.appendChild(actions);
+          }
 
           row.appendChild(bubble);
           messagesEl.appendChild(row);
@@ -549,10 +892,9 @@
 
       function persistThread() {
         if (conversation.length === 0) return;
-        var firstText = conversation[0].content || "Storm Screenshot Report";
-        var title = firstText.slice(0, 48);
+        var title = (conversation[0].content || "Storm Screenshot Report").slice(0, 48);
         var stripped = conversation.map(function (m) {
-          return { role: m.role, content: m.content };
+          return { role: m.role, content: m.content, diagramUrl: m.diagramUrl || null };
         });
 
         if (!currentSessionId) {
@@ -561,7 +903,7 @@
             id: currentSessionId,
             title: title,
             messages: stripped,
-            updatedAt: Date.now(),
+            updatedAt: Date.now()
           });
         } else {
           var idx = sessions.findIndex(function (s) {
@@ -572,15 +914,8 @@
               id: currentSessionId,
               title: title,
               messages: stripped,
-              updatedAt: Date.now(),
+              updatedAt: Date.now()
             };
-          } else {
-            sessions.unshift({
-              id: currentSessionId,
-              title: title,
-              messages: stripped,
-              updatedAt: Date.now(),
-            });
           }
         }
         saveSessions();
@@ -637,13 +972,15 @@
       document.getElementById("new-chat-btn").addEventListener("click", function () {
         currentSessionId = null;
         conversation = [];
-        setPendingImage(null);
+        pendingImages = [];
+        renderPendingImages();
         renderMessages();
       });
 
       document.getElementById("clear-chat-btn").addEventListener("click", function () {
         conversation = [];
-        setPendingImage(null);
+        pendingImages = [];
+        renderPendingImages();
         renderMessages();
       });
 
@@ -656,21 +993,69 @@
           renderHistory();
         });
 
+      // Probe Intercept Calculator
+      function updateCalculator() {
+        var speed = parseFloat(document.getElementById("calc-speed").value) || 0;
+        var dist = parseFloat(document.getElementById("calc-dist").value) || 0;
+        var dir = document.getElementById("calc-dir").value;
+        var safeMap = {
+          N: "West or East",
+          NE: "Northwest or Southeast",
+          E: "North or South",
+          SE: "Northeast or Southwest",
+          S: "East or West",
+          SW: "Southeast or Northwest",
+          W: "South or North",
+          NW: "Southwest or Northeast"
+        };
+
+        var out = document.getElementById("calc-output");
+        if (speed <= 0 || dist <= 0) {
+          out.textContent = "Enter positive speed and distance values.";
+          return;
+        }
+        var mins = Math.round((dist / speed) * 60);
+        var urgency =
+          mins <= 5
+            ? "IMMINENT — deploy probe now & clear path!"
+            : mins <= 15
+            ? "SOON — position ahead on parallel road."
+            : "APPROACHING — plenty of time to intercept.";
+
+        out.innerHTML =
+          "<strong>ETA to Target:</strong> ~" +
+          mins +
+          " min (" +
+          urgency +
+          ")<br><strong>Safe Escape Directions:</strong> Move " +
+          safeMap[dir];
+      }
+
+      ["calc-speed", "calc-dist", "calc-dir"].forEach(function (id) {
+        document.getElementById(id).addEventListener("input", updateCalculator);
+      });
+      updateCalculator();
+
       chatForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         var text = chatInput.value.trim();
-        var image = pendingImageDataUrl;
+        var imagesToSend = pendingImages.slice();
 
-        if (!text && !image) return;
+        if (!text && imagesToSend.length === 0) return;
 
         var historyForApi = conversation.map(function (m) {
           return { role: m.role, content: m.content };
         });
-        var displayMessage = text || "Analyze this TWISTED screenshot.";
+        var displayMessage = text || "Analyze these TWISTED screenshot(s).";
 
-        conversation.push({ role: "user", content: displayMessage, image: image });
+        conversation.push({
+          role: "user",
+          content: displayMessage,
+          images: imagesToSend
+        });
         chatInput.value = "";
-        setPendingImage(null);
+        pendingImages = [];
+        renderPendingImages();
         renderMessages();
         showTyping();
 
@@ -681,9 +1066,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               message: displayMessage,
-              image: image,
-              history: historyForApi,
-            }),
+              images: imagesToSend,
+              history: historyForApi
+            })
           });
           if (!res.ok) throw new Error("Server error");
           var data = await res.json();
@@ -694,7 +1079,12 @@
         }
 
         hideTyping();
-        conversation.push({ role: "assistant", content: replyText });
+        var diagramUrl = createStormTrackGraphic(replyText);
+        conversation.push({
+          role: "assistant",
+          content: replyText,
+          diagramUrl: diagramUrl
+        });
         persistThread();
         renderMessages();
       });
