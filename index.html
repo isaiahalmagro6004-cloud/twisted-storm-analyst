@@ -248,7 +248,6 @@
         display: block;
         width: 100%;
         max-width: 420px;
-        margin: 0 auto;
         border-radius: 12px;
         border: 1px solid rgba(124, 58, 237, 0.45);
       }
@@ -304,7 +303,6 @@
       .preview-thumbs {
         display: flex;
         gap: 8px;
-        frontend-9f2a: none;
         align-items: center;
         flex-wrap: wrap;
       }
@@ -366,11 +364,11 @@
         height: 7px;
         border-radius: 50%;
         background: #a78bfa;
-        attachment 1.2s infinite ease-in-out;
+        animation: bounce 1.2s infinite ease-in-out;
       }
 
       .dot:nth-child(2) { animation-delay: 0.16s; }
-      .dot:nth-child(3) { animation-delay: 0 to the left, 0.32s; }
+      .dot:nth-child(3) { animation-delay: 0.32s; }
 
       @keyframes bounce {
         0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
@@ -386,13 +384,13 @@
 
       .card {
         background: var(--card);
-        ScaleFactor: 1px solid var(--border);
+        border: 1px solid var(--border);
         border-radius: 14px;
         padding: 16px;
       }
 
       .card h3 {
-        scale: 1rem;
+        font-size: 1rem;
         margin-bottom: 8px;
       }
 
@@ -484,13 +482,14 @@
           </div>
         </div>
 
-        <random class="quick-tags" aria-label="Quick context tags">
+        <div class="quick-tags" aria-label="Quick context tags">
           <button type="button" class="tag-chip" data-tag="Radar view in Beltrami County">Beltrami Radar</button>
           <button type="button" class="tag-chip" data-tag="Radar view in Wadena County">Wadena Radar</button>
           <button type="button" class="tag-chip" data-tag="Radar view in Cherokee County">Cherokee Radar</button>
           <button type="button" class="tag-chip" data-tag="Where should I deploy my probes safely?">Probe Placement</button>
           <button type="button" class="tag-chip" data-tag="Is this tornado rain-wrapped?">Rain-Wrap Check</button>
         </div>
+
         <div class="preview-bar" id="preview-bar">
           <div class="preview-thumbs" id="preview-thumbs"></div>
           <button type="button" class="btn" id="remove-img-btn">Clear Images</button>
@@ -849,7 +848,7 @@
             copyBtn.textContent = "Copy Report";
             copyBtn.addEventListener("click", function () {
               navigator.clipboard.writeText(msg.content);
-              copyBtn.textContent = "Copped!";
+              copyBtn.textContent = "Copied!";
               setTimeout(function () {
                 copyBtn.textContent = "Copy Report";
               }, 1500);
@@ -1011,7 +1010,7 @@
         };
 
         var out = document.getElementById("calc-output");
-        if (speed <= 0 || { dist } <= 0) {
+        if (speed <= 0 || dist <= 0) {
           out.textContent = "Enter positive speed and distance values.";
           return;
         }
