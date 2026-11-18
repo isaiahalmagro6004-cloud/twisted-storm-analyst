@@ -3,7 +3,6 @@
 const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
-const path = require("path");
 
 const app = express();
 const PORT = 3000;
@@ -11,7 +10,12 @@ const PORT = 3000;
 // Replace locally with your Groq API key or set GROQ_API_KEY in your environment
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "YOUR_GROQ_API_KEY_HERE";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
+
+// Active Groq vision models (tried in order if one is unavailable) and text model
+const GROQ_VISION_MODELS = [
+  "qwen/qwen3.8-27b",
+  "meta-models/muse-spark-open"
+];
 const GROQ_TEXT_MODEL = "llama-3.3-70b-versatile";
 
 const SYSTEM_PROMPT = `You are an expert storm analyst for the Roblox game TWISTED — a realistic tornado simulation game. Your job is to analyze screenshots of the game’s radar, storm view, and map, then make the most accurate tornado forecast possible. Follow ALL the instructions below carefully:
@@ -108,7 +112,7 @@ const SYSTEM_PROMPT = `You are an expert storm analyst for the Roblox game TWIST
 Ready? Please send your Twisted screenshot — radar, map, or storm view — and I’ll analyze it for you right now!`;
 
 app.use(cors());
-app.use(express.json({ limit: "15mb" }));
+app.use(express.json({ limit: "20mb" }));
 app.use(express.static(__dirname));
 
 function getFallbackReply(hasImage, reason) {
@@ -120,6 +124,48 @@ function getFallbackReply(hasImage, reason) {
     reason +
     ").\n\nPlease make sure a valid GROQ_API_KEY is set in server.js and your internet connection is active, then resend your TWISTED screenshot."
   );
+}
+
+async function callGroq(model, messages) {
+  const response = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + GROQ_API_KEY,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: messages,
+      temperature: 0.3,
+      max_tokens: 1500,
+    }),
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text().catch(function () {
+      return "";
+    });
+    let detail = "Groq status " + response.status;
+    try {
+      const parsed = JSON.parse(errBody);
+      if (parsed && parsed.error && parsed.error.message) {
+        detail = "Groq " + response.status + ": " + parsed.error.message;
+      }
+    } catch (e) {}
+    return { ok: false, status: response.status, detail: detail };
+  }
+
+  const data = await response.json();
+  const reply =
+    data &&
+    data.choices &&
+    data.choices[0] &&
+    data.choices[0].message &&
+    data.choices[0].message.content
+      ? data.choices[0].message.content.trim()
+      : "";
+
+  return { ok: true, reply: reply, model: model };
 }
 
 app.post("/api/chat", async function (req, res) {
@@ -174,52 +220,35 @@ app.post("/api/chat", async function (req, res) {
         ]
       : cleanText;
 
-    const model = hasImage ? GROQ_VISION_MODEL : GROQ_TEXT_MODEL;
-
     const messages = [{ role: "system", content: SYSTEM_PROMPT }]
       .concat(cleanHistory)
       .concat([{ role: "user", content: userContent }]);
 
-    const response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + GROQ_API_KEY,
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: messages,
-        temperature: 0.3,
-        max_tokens: 1500,
-      }),
+    const modelsToTry = hasImage ? GROQ_VISION_MODELS : [GROQ_TEXT_MODEL];
+    let lastError = "unknown error";
+
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const result = await callGroq(modelsToTry[i], messages);
+      if (result.ok && result.reply) {
+        return res.json({
+          reply: result.reply,
+          model: result.model,
+          fallback: false,
+        });
+      }
+      lastError = result.detail || "empty response";
+      console.error("Model failed (" + modelsToTry[i] + "):", lastError);
+
+      // Only retry next model if the model ID was not found / decommissioned
+      if (result.status !== 404 && result.status !== 400) {
+        break;
+      }
+    }
+
+    return res.json({
+      reply: getFallbackReply(hasImage, lastError),
+      fallback: true,
     });
-
-    if (!response.ok) {
-      console.error("Groq API error:", response.status);
-      return res.json({
-        reply: getFallbackReply(hasImage, "Groq status " + response.status),
-        fallback: true,
-      });
-    }
-
-    const data = await response.json();
-    const reply =
-      data &&
-      data.choices &&
-      data.choices[0] &&
-      data.choices[0].message &&
-      data.choices[0].message.content
-        ? data.choices[0].message.content.trim()
-        : "";
-
-    if (!reply) {
-      return res.json({
-        reply: getFallbackReply(hasImage, "empty response"),
-        fallback: true,
-      });
-    }
-
-    return res.json({ reply: reply, model: model, fallback: false });
   } catch (err) {
     console.error("Server error:", err.message);
     return res.json({
