@@ -11,7 +11,6 @@ const PORT = 3000;
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "YOUR_GROQ_API_KEY_HERE";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// Active Groq vision models (tried in order if one is unavailable) and text model
 const GROQ_VISION_MODELS = [
   "qwen/qwen3.8-27b",
   "meta-models/muse-spark-open"
@@ -112,12 +111,12 @@ const SYSTEM_PROMPT = `You are an expert storm analyst for the Roblox game TWIST
 Ready? Please send your Twisted screenshot — radar, map, or storm view — and I’ll analyze it for you right now!`;
 
 app.use(cors());
-app.use(express.json({ limit: "20mb" }));
+app.use(express.json({ limit: "25mb" }));
 app.use(express.static(__dirname));
 
-function getFallbackReply(hasImage, reason) {
-  if (!hasImage) {
-    return "Ready! Please upload or paste your TWISTED screenshot (radar, map, or storm view) so I can generate a full Storm Analysis Report.";
+function getFallbackReply(hasImages, reason) {
+  if (!hasImages) {
+    return "Ready! Upload up to 3 TWISTED screenshots (radar, map, or storm view) and tap Analyze to get a full Storm Analysis Report.";
   }
   return (
     "⚠️ Live Groq analysis is currently unavailable (" +
@@ -131,14 +130,14 @@ async function callGroq(model, messages) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + GROQ_API_KEY,
+      Authorization: "Bearer " + GROQ_API_KEY
     },
     body: JSON.stringify({
       model: model,
       messages: messages,
       temperature: 0.3,
-      max_tokens: 1500,
-    }),
+      max_tokens: 1500
+    })
   });
 
   if (!response.ok) {
@@ -173,15 +172,29 @@ app.post("/api/chat", async function (req, res) {
     const body = req.body || {};
     const cleanText =
       typeof body.message === "string" ? body.message.trim() : "";
-    const image = body.image || null;
-    const rawHistory = Array.isArray(body.history) ? body.history : [];
-    const hasImage =
-      typeof image === "string" && image.indexOf("data:image/") === 0;
 
-    if (!cleanText && !hasImage) {
+    // Support both images[] (up to 3) and single image
+    let imageList = [];
+    if (Array.isArray(body.images)) {
+      imageList = body.images
+        .filter(function (img) {
+          return typeof img === "string" && img.indexOf("data:image/") === 0;
+        })
+        .slice(0, 3);
+    } else if (
+      typeof body.image === "string" &&
+      body.image.indexOf("data:image/") === 0
+    ) {
+      imageList = [body.image];
+    }
+
+    const hasImages = imageList.length > 0;
+    const rawHistory = Array.isArray(body.history) ? body.history : [];
+
+    if (!cleanText && !hasImages) {
       return res
         .status(400)
-        .json({ error: "Please attach a screenshot or enter a message." });
+        .json({ error: "Please attach at least one screenshot or message." });
     }
 
     const cleanHistory = rawHistory
@@ -200,31 +213,37 @@ app.post("/api/chat", async function (req, res) {
 
     if (!GROQ_API_KEY || GROQ_API_KEY === "YOUR_GROQ_API_KEY_HERE") {
       return res.json({
-        reply: getFallbackReply(hasImage, "GROQ_API_KEY not set"),
-        fallback: true,
+        reply: getFallbackReply(hasImages, "GROQ_API_KEY not set"),
+        fallback: true
       });
     }
 
-    const userContent = hasImage
-      ? [
-          {
-            type: "text",
-            text:
-              cleanText ||
-              "Analyze this Roblox TWISTED screenshot and provide the full Storm Analysis Report.",
-          },
-          {
+    let userContent;
+    if (hasImages) {
+      userContent = [
+        {
+          type: "text",
+          text:
+            cleanText ||
+            "Analyze these Roblox TWISTED screenshot(s) and provide the full Storm Analysis Report."
+        }
+      ].concat(
+        imageList.map(function (imgUrl) {
+          return {
             type: "image_url",
-            image_url: { url: image },
-          },
-        ]
-      : cleanText;
+            image_url: { url: imgUrl }
+          };
+        })
+      );
+    } else {
+      userContent = cleanText;
+    }
 
     const messages = [{ role: "system", content: SYSTEM_PROMPT }]
       .concat(cleanHistory)
       .concat([{ role: "user", content: userContent }]);
 
-    const modelsToTry = hasImage ? GROQ_VISION_MODELS : [GROQ_TEXT_MODEL];
+    const modelsToTry = hasImages ? GROQ_VISION_MODELS : [GROQ_TEXT_MODEL];
     let lastError = "unknown error";
 
     for (let i = 0; i < modelsToTry.length; i++) {
@@ -233,27 +252,26 @@ app.post("/api/chat", async function (req, res) {
         return res.json({
           reply: result.reply,
           model: result.model,
-          fallback: false,
+          fallback: false
         });
       }
       lastError = result.detail || "empty response";
       console.error("Model failed (" + modelsToTry[i] + "):", lastError);
 
-      // Only retry next model if the model ID was not found / decommissioned
       if (result.status !== 404 && result.status !== 400) {
         break;
       }
     }
 
     return res.json({
-      reply: getFallbackReply(hasImage, lastError),
-      fallback: true,
+      reply: getFallbackReply(hasImages, lastError),
+      fallback: true
     });
   } catch (err) {
     console.error("Server error:", err.message);
     return res.json({
       reply: getFallbackReply(true, "network or server error"),
-      fallback: true,
+      fallback: true
     });
   }
 });
